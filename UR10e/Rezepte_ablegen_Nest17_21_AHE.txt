@@ -1,0 +1,83 @@
+ Programm
+   Roboterprogramm
+     'muss 13,5 cm über dem nest 17 oder 21 sitzen'
+     var_11≔get_actual_tcp_pose()
+     FahreLinear
+       var_11
+     Variablen
+       var_12≔get_actual_tcp_pose()
+       var_13≔get_actual_tcp_pose()
+       var_14≔get_actual_tcp_pose()
+       var_15≔get_actual_tcp_pose()
+       var_16≔get_actual_tcp_pose()
+       var_17≔get_actual_tcp_pose()
+       var_18≔get_actual_tcp_pose()
+       var_19≔get_actual_tcp_pose()
+       var_20≔get_actual_tcp_pose()
+     Rezept 1&2
+       If rezept1 == True 
+         var_12[2]=var_12[2]-Nest17Dist_R1
+         FahreLinear
+           var_12
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 3&4
+       If rezept2 == True 
+         var_13[2]=var_13[2]-Nest17Dist_R2
+         FahreLinear
+           var_13
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 5&6
+       If rezept3 == True 
+         var_14[2]=var_14[2]-Nest17Dist_R3
+         FahreLinear
+           var_14
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 7&8
+       If rezept4 == True 
+         var_15[2]=var_15[2]-Nest17Dist_R4
+         FahreLinear
+           var_15
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 9&10
+       If rezept5 ==  True 
+         var_16[2]=var_16[2]-Nest17Dist_R5
+         FahreLinear
+           var_16
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 11&12
+       If rezept6 ==  True 
+         var_17[2]=var_17[2]-Nest17Dist_R6
+         FahreLinear
+           var_17
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 13&14
+       If rezept7 == True 
+         var_18[2]=var_18[2]-Nest17Dist_R7
+         FahreLinear
+           var_18
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 15&16
+       If rezept8 == True 
+         var_19[2]=var_19[2]-Nest17Dist_R8
+         FahreLinear
+           var_19
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 17&18
+       If rezept9 == True 
+         var_20[2]=var_20[2]-Nest17Dist_R9
+         FahreLinear
+           var_20
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Nutzlast festlegen: nur_Gr5
+     FahreLinear
+       Richtung: Werkzeug Z-
+         Until (distance)

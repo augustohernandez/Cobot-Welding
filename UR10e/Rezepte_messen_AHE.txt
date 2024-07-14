@@ -1,0 +1,176 @@
+ Programm
+   Roboterprogramm
+     Warten Rezept_liegtAn
+     merker_OK≔ False 
+     merker_NOK≔ False 
+     If rezept1 == True 
+       FahreLinear
+         start_MessenR1L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR1L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR1L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept2 == True 
+       FahreLinear
+         start_MessenR2L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR2L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR2L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept3 == True 
+       FahreLinear
+         start_MessenR3L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR3L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR3L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept4 == True 
+       FahreLinear
+         start_MessenR4L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR4L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR4L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept5 == True 
+       FahreLinear
+         start_MessenR5L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR5L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR5L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept6 == True 
+       FahreLinear
+         start_MessenR6L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR6L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR6L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept7 == True 
+       FahreLinear
+         start_MessenR7L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR7L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR7L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept8 == True 
+       FahreLinear
+         start_MessenR8L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR8L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR8L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept9 == True 
+       FahreLinear
+         start_MessenR9L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR9L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR9L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus

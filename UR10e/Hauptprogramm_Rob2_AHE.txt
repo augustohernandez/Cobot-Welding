@@ -1,0 +1,1543 @@
+ Programm
+   Init Variablen
+   VorStart
+     'Rezept 1: DN 25, Sachnr 799-034'
+     'Rezept 2: DN 40, Sachnr 799-033'
+     'Rezept 3: DN 50, Sachnr 799-030'
+     'Rezept 4: DN 65, Sachnr 799-029'
+     'Rezept 5: 1,0" OD, Sachnr 799-036'
+     'Rezept 6: 1,5" OD, Sachnr ?'
+     'Rezept 7: 2,0" OD, Sachnr ?'
+     'Rezept 8: 2,5" OD, Sachnr'
+     'Rezept 9: 3,0" OD, Sachnr ?'
+     '__________________________________'
+     nurErstesMal≔ True 
+     merker_Ende≔ False 
+     'TCP einstellen:'
+     Einstellen
+     Nutzlast festlegen: nur_Gr5
+     Einstellen freigabe_mess=Aus
+     Einstellen Zugriff_gemNest=Aus
+     Aufruf GEA_Greifer_öffnen_JBE
+     X≔0
+     Y≔1
+     Z≔2
+     disthHomePos≔0.1
+     'Manuelle Nestauswahl'
+     Pose beim Hochfahren prüfen und auf Home fahren
+       start_pos≔get_actual_tcp_pose()
+       FahreAchse
+         start_pos
+       If start_pos[X]>home[X]-disthHomePos and start_pos[X]<home[X]+disthHomePos
+         If start_pos[Y]>home[Y]-disthHomePos and start_pos[Y]<home[Y]+disthHomePos
+           If start_pos[Z]>home[Z]-disthHomePos and start_pos[Z]<home[Z]+disthHomePos
+             FahreAchse
+               home
+           Else
+             Halt
+             'Output anlegen für Warnung'
+         Else
+           Halt
+           'Output anlegen für Warnung'
+       Else
+         Halt
+         'Output anlegen für Warnung'
+   Roboterprogramm
+     Warten Rezept_liegtAn
+     If nurErstesMal
+       Warten Rezept_liegtAn
+       FahreP
+         presseGemNest_1
+         presseGemNest_2
+       If  not Schublade4_auf and  not Schublade5_auf and  not Schublade6_auf
+         Warten Schublade4_leer or Schublade5_leer or Schublade6_leer
+       Zugriff gemNester anfordern - auf Rob1 warten
+         If Zugriff_gemNest== False 
+           Einstellen Zugriff_gemNest=Ein
+           Warten warten_auf_Rob1=LO
+       'Meldung: Auf Rob1 warten'
+       FahreLinear
+         über_Schublade4
+       'If (Schublade4_auf and Schublade4_voll) or (Schublade5_auf and Schublade5_voll) or (Schublade6_auf and Schublade6_voll)'
+       Schleife (Schublade4_auf and Schublade4_voll) or (Schublade5_auf and Schublade5_voll) or (Schublade6_auf and Schublade6_voll)
+         Aufruf GEA_Schublade_schließen_J
+       If  not Schublade4_auf and  not Schublade5_auf and  not Schublade6_auf
+         Aufruf GEA_Schublade_öffnen_JBE
+       nurErstesMal≔ False 
+     Variablen zurücksetzen
+       LetztesTeil_iO≔ False 
+       NestwahlOK_abge≔ False 
+       merker_OK≔ False 
+       merker_NOK≔ False 
+     LetztesTeil
+       If merker_Ende and ( not gemein_nest25 and  not gemein_nest26 and  not gemein_nest27 and  not gemein_nest28)
+         FahreLinear
+           über_Schublade4
+         Schleife Schublade4_auf or Schublade5_auf or Schublade6_auf
+           Aufruf GEA_Schublade_schließen_J
+         FahreLinear
+           über_Schublade4
+           home
+         'Programm Ende!'
+         Halt
+     Aufruf GEA_Nestauswahl_gemNest_J
+     If merker_Ende and ( not gemein_nest25 and  not gemein_nest26 and  not gemein_nest27 and  not gemein_nest28)
+       FahreLinear
+         über_Schublade4
+       Schleife Schublade4_auf or Schublade5_auf or Schublade6_auf
+         Aufruf GEA_Schublade_schließen_J
+       FahreLinear
+         über_Schublade4
+         home
+       'Programm Ende!'
+       Halt
+     FahreP
+       'über_Schublade4'
+       presseGemNest_4
+       appro_Nest25
+     greifen
+       FahreLinear
+         'Muss 20cm über dem Nest liegen'
+         KOS_gemNestNr_i
+       Aufruf GEA_Greifer_öffnen_JBE
+       Aufruf Gea_Rezepte_greifen_JBE
+       FahreP
+         appro_Nest25
+         presseGemNest_4
+         über_Schublade4
+         presseGemNest_2
+       Einstellen Zugriff_gemNest=Aus
+       'Meldung: Freigabe gem Bereich'
+       FahreLinear
+         presseGemNest_1
+     If Beidseitig
+       messen
+         Warten  not Nest_31_belegt
+         FahreLinear
+           appro_Messen_1
+           appro_Messen_2
+         Aufruf Gea_Rezepte_messen_JBE
+         Einstellen reset_peak=HI:Pulse 0.5
+       If merker_NOK== True 
+         pressen
+           Presspunkt≔get_actual_tcp_pose()
+           Presspunkt[0]=Presspunkt[0]+0.015
+           FahreLinear
+             Presspunkt
+           Presspunkt[2]=Presspunkt[2]-0.2
+           FahreLinear
+             Presspunkt
+               Until (tool_contact_detection)
+           Presse starten, vorher Singularität abfragen
+             curr_Rotation≔get_actual_joint_positions()
+             rot_Ellbogen≔curr_Rotation[2]
+             If rot_Ellbogen≠0
+               Einstellen presse_start=Ein
+               Warten: 1.0
+               Einstellen presse_start=Aus
+               Warten presse_fertig=HI
+             Else
+               Meldung: Roboter Singularität!
+           Presspunkt[2]=Presspunkt[2]+0.2
+           Presspunkt[0]=Presspunkt[0]-0.015
+           FahreLinear
+             Presspunkt
+         messen
+           Aufruf Gea_Rezepte_messen_JBE
+           Einstellen reset_peak=HI:Pulse 0.5
+         If merker_NOK== True 
+           pressen
+             Presspunkt≔get_actual_tcp_pose()
+             Presspunkt[0]=Presspunkt[0]+0.015
+             FahreLinear
+               Presspunkt
+             Presspunkt[2]=Presspunkt[2]-0.2
+             FahreLinear
+               Presspunkt
+                 Until (tool_contact_detection)
+             Presse starten, vorher Singularität abfragen
+               curr_Rotation≔get_actual_joint_positions()
+               rot_Ellbogen≔curr_Rotation[2]
+               If rot_Ellbogen≠0
+                 Einstellen presse_start=Ein
+                 Warten: 1.0
+                 Einstellen presse_start=Aus
+                 Warten presse_fertig=HI
+               Else
+                 Meldung: Roboter Singularität!
+             Presspunkt[2]=Presspunkt[2]+0.2
+             Presspunkt[0]=Presspunkt[0]-0.015
+             FahreLinear
+               Presspunkt
+           messen
+             Aufruf Gea_Rezepte_messen_JBE
+             If merker_NOK== True 
+               FahreLinear
+                 depart_PresseL1
+                 depart_PresseL2
+                 appro_NestNOK
+               Aufruf GEA_Nestauswahl_NOK_JBE
+               If rezept4 or rezept8 or rezept9
+                 FahreP
+                   appro_NOK_gr_1
+                   appro_NOK_gr_2
+                 If KOS_NOK_Nr_i==NOK_Nest_29
+                   FahreLinear
+                     appro_Nest29
+                 ElseIf KOS_NOK_Nr_i==NOK_Nest_30
+                   FahreLinear
+                     appro_Nest30
+                 ElseIf KOS_NOK_Nr_i==NOK_Nest_31
+                   FahreLinear
+                     appro_Nest31
+                 Aufruf GEA_gro_Rezepte_ablegen
+               Else
+                 FahreLinear
+                   KOS_NOK_Nr_i
+                 Aufruf Gea_Rezepte_ablegen_JBE_1
+               LetztesTeil_iO≔ False 
+               FahreLinear
+                 appro_NestNOK
+       messen_andere_Seite
+         If merker_OK== True  and Beidseitig == True 
+           FahreLinear
+             start_Rotation
+           FahreAchse
+             rot_Bauteil180
+           Aufruf Gea_Rezepte_messen_ande_1
+           Einstellen reset_peak=HI:Pulse 0.5
+           If merker_NOK== True 
+             pressen
+               Presspunkt≔get_actual_tcp_pose()
+               Presspunkt[0]=Presspunkt[0]+0.015
+               FahreLinear
+                 Presspunkt
+               Presspunkt[2]=Presspunkt[2]-0.2
+               FahreLinear
+                 Presspunkt
+                   Until (tool_contact_detection)
+               Presse starten, vorher Singularität abfragen
+                 curr_Rotation≔get_actual_joint_positions()
+                 rot_Ellbogen≔curr_Rotation[2]
+                 If rot_Ellbogen≠0
+                   Einstellen presse_start=Ein
+                   Warten: 1.0
+                   Einstellen presse_start=Aus
+                   Warten presse_fertig=HI
+                 Else
+                   Meldung: Roboter Singularität!
+               Presspunkt[2]=Presspunkt[2]+0.2
+               Presspunkt[0]=Presspunkt[0]-0.015
+               FahreLinear
+                 Presspunkt
+             messen
+               Aufruf Gea_Rezepte_messen_ande_1
+               Einstellen reset_peak=HI:Pulse 0.5
+             If merker_NOK== True 
+               pressen
+                 Presspunkt≔get_actual_tcp_pose()
+                 Presspunkt[0]=Presspunkt[0]+0.015
+                 FahreLinear
+                   Presspunkt
+                 Presspunkt[2]=Presspunkt[2]-0.2
+                 FahreLinear
+                   Presspunkt
+                     Until (tool_contact_detection)
+                 Presse starten, vorher Singularität abfragen
+                   curr_Rotation≔get_actual_joint_positions()
+                   rot_Ellbogen≔curr_Rotation[2]
+                   If rot_Ellbogen≠0
+                     Einstellen presse_start=Ein
+                     Warten: 1.0
+                     Einstellen presse_start=Aus
+                     Warten presse_fertig=HI
+                   Else
+                     Meldung: Roboter Singularität!
+                 Presspunkt[2]=Presspunkt[2]+0.2
+                 Presspunkt[0]=Presspunkt[0]-0.015
+                 FahreLinear
+                   Presspunkt
+                 Aufruf Gea_Rezepte_messen_ande_1
+                 If merker_NOK== True 
+                   FahreLinear
+                     depart_PresseR1
+                     depart_PresseR2
+                     approNestNOK_be
+                   Aufruf GEA_Nestauswahl_NOK_JBE
+                   If rezept4 or rezept8 or rezept9
+                     FahreP
+                       approNOK_gr_be1
+                       approNOK_gr_be2
+                     If KOS_NOK_Nr_i==NOK_Nest_29
+                       FahreLinear
+                         appro_Nest29_be
+                     ElseIf KOS_NOK_Nr_i==NOK_Nest_30
+                       FahreLinear
+                         appro_Nest30_be
+                     ElseIf KOS_NOK_Nr_i==NOK_Nest_31
+                       FahreLinear
+                         appro_Nest31_be
+                     Aufruf GEA_gro_Rezepte_ablegen
+                   Else
+                     FahreLinear
+                       KOS_NOK_Nr_i
+                     Aufruf Gea_Rezepte_ablegen_JBE_1
+                   LetztesTeil_iO≔ False 
+                   FahreLinear
+                     departNOK_Nest
+       Ablage OK
+         If merker_OK== True  and Beidseitig== True 
+           FahreLinear
+             depart_PresseR1
+             depart_PresseR2
+         ElseIf merker_OK== True  and Beidseitig== False 
+           FahreLinear
+             depart_PresseL1
+             depart_PresseL2
+         If merker_OK== True 
+           FahreP
+             zuAblage_iO_1
+             zuAblage_iO_2
+           Zugriff gemNester anfordern - auf Rob1 warten
+             If Zugriff_gemNest== False 
+               Einstellen Zugriff_gemNest=Ein
+               Warten warten_auf_Rob1=LO
+           'Meldung: Auf Rob1 warten'
+           Nestauswahl Nester iO
+             Automatische Nestauswahl
+               Schleife  not NestwahlOK_abge
+                 If Schublade4_auf
+                   If  not nest13 and ( not nest14 and  not nest15 and  not nest16)
+                     KOS_iO_Nr_i≔Nest_13
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest14 and ( not nest15 and  not nest16)
+                     KOS_iO_Nr_i≔Nest_14
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest15 and  not nest16
+                     KOS_iO_Nr_i≔Nest_15
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest16
+                     KOS_iO_Nr_i≔Nest_16
+                     NestwahlOK_abge≔ True 
+                   Else
+                     FahreAchse
+                       über_Schublade4
+                     Aufruf GEA_Schublade_schließen_J
+                     FahreLinear
+                       über_Schublade4
+                 ElseIf Schublade5_auf
+                   If  not nest17 and  not nest18
+                     KOS_iO_Nr_i≔Nest_17
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest18
+                     KOS_iO_Nr_i≔Nest_18
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest19
+                     KOS_iO_Nr_i≔Nest_19
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest20
+                     KOS_iO_Nr_i≔Nest_20
+                     NestwahlOK_abge≔ True 
+                   Else
+                     FahreAchse
+                       über_Schublade4
+                     Aufruf GEA_Schublade_schließen_J
+                     FahreLinear
+                       über_Schublade4
+                 ElseIf Schublade6_auf
+                   If  not nest21
+                     KOS_iO_Nr_i≔Nest_21
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest22
+                     KOS_iO_Nr_i≔Nest_22
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest23
+                     KOS_iO_Nr_i≔Nest_23
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest24
+                     KOS_iO_Nr_i≔Nest_24
+                     NestwahlOK_abge≔ True 
+                   Else
+                     FahreAchse
+                       über_Schublade4
+                     Aufruf GEA_Schublade_schließen_J
+                     FahreLinear
+                       über_Schublade4
+                 Else
+                   FahreAchse
+                     über_Schublade4
+                   Warten Schublade4_leer or Schublade5_leer or Schublade6_leer
+                   Aufruf GEA_Schublade_öffnen_JBE
+                   FahreLinear
+                     appro_Nest16
+                   If Schublade4_auf
+                     If  not nest13
+                       KOS_iO_Nr_i≔Nest_13
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest14
+                       KOS_iO_Nr_i≔Nest_14
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest15
+                       KOS_iO_Nr_i≔Nest_15
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest16
+                       KOS_iO_Nr_i≔Nest_16
+                       NestwahlOK_abge≔ True 
+                   ElseIf Schublade5_auf
+                     If  not nest17
+                       KOS_iO_Nr_i≔Nest_17
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest18
+                       KOS_iO_Nr_i≔Nest_18
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest19
+                       KOS_iO_Nr_i≔Nest_19
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest20
+                       KOS_iO_Nr_i≔Nest_20
+                       NestwahlOK_abge≔ True 
+                   ElseIf Schublade6_auf
+                     If  not nest21
+                       KOS_iO_Nr_i≔Nest_21
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest22
+                       KOS_iO_Nr_i≔Nest_22
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest23
+                       KOS_iO_Nr_i≔Nest_23
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest24
+                       KOS_iO_Nr_i≔Nest_24
+                       NestwahlOK_abge≔ True 
+           FahreLinear
+             appro_Nest16
+           FahreLinear
+             KOS_iO_Nr_i
+           Aufruf Gea_Rezepte_ablegen_JBE_1
+           NestwahlOK_abge≔ False 
+           LetztesTeil_iO≔ True 
+         If LetztesTeil_iO
+           Einstellen letztesTeil_OK=HI:Pulse 0.5
+           FahreLinear
+             über_Schublade4
+         Else
+           Einstellen letztesTeil_NOK=HI:Pulse 0.5
+           FahreAchse
+             appro_NestNOK
+           FahreP
+             presseGemNest_1
+             presseGemNest_2
+           Zugriff gemNester anfordern - auf Rob1 warten
+             If Zugriff_gemNest== False 
+               Einstellen Zugriff_gemNest=Ein
+               Warten warten_auf_Rob1=LO
+           'Meldung: Auf Rob1 warten'
+           FahreLinear
+             über_Schublade4
+     Else
+       FahreAchse
+         dreheEins180
+       Warten  not Nest_31_belegt
+       FahreP
+         approMessEins_1
+         approMessEins_2
+       messen_andere_Seite
+         Aufruf Gea_Rezepte_messen_ande_1
+         Einstellen reset_peak=HI:Pulse 0.5
+         If merker_NOK== True 
+           pressen
+             Presspunkt≔get_actual_tcp_pose()
+             Presspunkt[0]=Presspunkt[0]+0.015
+             FahreLinear
+               Presspunkt
+             Presspunkt[2]=Presspunkt[2]-0.2
+             FahreLinear
+               Presspunkt
+                 Until (tool_contact_detection)
+             Presse starten, vorher Singularität abfragen
+               curr_Rotation≔get_actual_joint_positions()
+               rot_Ellbogen≔curr_Rotation[2]
+               If rot_Ellbogen≠0
+                 Einstellen presse_start=Ein
+                 Warten: 1.0
+                 Einstellen presse_start=Aus
+                 Warten presse_fertig=HI
+               Else
+                 Meldung: Roboter Singularität!
+             Presspunkt[2]=Presspunkt[2]+0.2
+             Presspunkt[0]=Presspunkt[0]-0.015
+             FahreLinear
+               Presspunkt
+           messen
+             Aufruf Gea_Rezepte_messen_ande_1
+             Einstellen reset_peak=HI:Pulse 0.5
+           If merker_NOK== True 
+             pressen
+               Presspunkt≔get_actual_tcp_pose()
+               Presspunkt[0]=Presspunkt[0]+0.015
+               FahreLinear
+                 Presspunkt
+               Presspunkt[2]=Presspunkt[2]-0.2
+               FahreLinear
+                 Presspunkt
+                   Until (tool_contact_detection)
+               Presse starten, vorher Singularität abfragen
+                 curr_Rotation≔get_actual_joint_positions()
+                 rot_Ellbogen≔curr_Rotation[2]
+                 If rot_Ellbogen≠0
+                   Einstellen presse_start=Ein
+                   Warten: 1.0
+                   Einstellen presse_start=Aus
+                   Warten presse_fertig=HI
+                 Else
+                   Meldung: Roboter Singularität!
+               Presspunkt[2]=Presspunkt[2]+0.2
+               Presspunkt[0]=Presspunkt[0]-0.015
+               FahreLinear
+                 Presspunkt
+               Aufruf Gea_Rezepte_messen_ande_1
+               If merker_NOK== True 
+                 FahreLinear
+                   depart_PresseR1
+                   depart_PresseR2
+                   approNestNOK_be
+                 Aufruf GEA_Nestauswahl_NOK_JBE
+                 If rezept4 or rezept8 or rezept9
+                   FahreP
+                     approNOK_gr_be1
+                     approNOK_gr_be2
+                   If KOS_NOK_Nr_i==NOK_Nest_29
+                     FahreLinear
+                       appro_Nest29_be
+                   ElseIf KOS_NOK_Nr_i==NOK_Nest_30
+                     FahreLinear
+                       appro_Nest30_be
+                   ElseIf KOS_NOK_Nr_i==NOK_Nest_31
+                     FahreLinear
+                       appro_Nest31_be
+                   Aufruf GEA_gro_Rezepte_ablegen
+                 Else
+                   FahreLinear
+                     KOS_NOK_Nr_i
+                   Aufruf Gea_Rezepte_ablegen_JBE_1
+                 LetztesTeil_iO≔ False 
+                 FahreLinear
+                   departNOK_Nest
+       Ablage OK
+         If merker_OK== True 
+           FahreLinear
+             depart_PresseR1
+             depart_PresseR2
+           FahreP
+             zuAblage_iO_1
+             zuAblage_iO_2
+           Zugriff gemNester anfordern - auf Rob1 warten
+             If Zugriff_gemNest== False 
+               Einstellen Zugriff_gemNest=Ein
+               Warten warten_auf_Rob1=LO
+           'Meldung: Auf Rob1 warten'
+           Nestauswahl Nester iO
+             Automatische Nestauswahl
+               Schleife  not NestwahlOK_abge
+                 If Schublade4_auf
+                   If  not nest13 and ( not nest14 and  not nest15 and  not nest16)
+                     KOS_iO_Nr_i≔Nest_13
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest14 and ( not nest15 and  not nest16)
+                     KOS_iO_Nr_i≔Nest_14
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest15 and  not nest16
+                     KOS_iO_Nr_i≔Nest_15
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest16
+                     KOS_iO_Nr_i≔Nest_16
+                     NestwahlOK_abge≔ True 
+                   Else
+                     FahreAchse
+                       über_Schublade4
+                     Aufruf GEA_Schublade_schließen_J
+                     FahreLinear
+                       über_Schublade4
+                 ElseIf Schublade5_auf
+                   If  not nest17 and  not nest18
+                     KOS_iO_Nr_i≔Nest_17
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest18
+                     KOS_iO_Nr_i≔Nest_18
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest19
+                     KOS_iO_Nr_i≔Nest_19
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest20
+                     KOS_iO_Nr_i≔Nest_20
+                     NestwahlOK_abge≔ True 
+                   Else
+                     FahreAchse
+                       über_Schublade4
+                     Aufruf GEA_Schublade_schließen_J
+                     FahreLinear
+                       über_Schublade4
+                 ElseIf Schublade6_auf
+                   If  not nest21
+                     KOS_iO_Nr_i≔Nest_21
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest22
+                     KOS_iO_Nr_i≔Nest_22
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest23
+                     KOS_iO_Nr_i≔Nest_23
+                     NestwahlOK_abge≔ True 
+                   ElseIf  not nest24
+                     KOS_iO_Nr_i≔Nest_24
+                     NestwahlOK_abge≔ True 
+                   Else
+                     FahreAchse
+                       über_Schublade4
+                     Aufruf GEA_Schublade_schließen_J
+                     FahreLinear
+                       über_Schublade4
+                 Else
+                   FahreAchse
+                     über_Schublade4
+                   Warten Schublade4_leer or Schublade5_leer
+                   Aufruf GEA_Schublade_öffnen_JBE
+                   FahreLinear
+                     appro_Nest16
+                   If Schublade4_auf
+                     If  not nest13
+                       KOS_iO_Nr_i≔Nest_13
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest14
+                       KOS_iO_Nr_i≔Nest_14
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest15
+                       KOS_iO_Nr_i≔Nest_15
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest16
+                       KOS_iO_Nr_i≔Nest_16
+                       NestwahlOK_abge≔ True 
+                   ElseIf Schublade5_auf
+                     If  not nest17
+                       KOS_iO_Nr_i≔Nest_17
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest18
+                       KOS_iO_Nr_i≔Nest_18
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest19
+                       KOS_iO_Nr_i≔Nest_19
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest20
+                       KOS_iO_Nr_i≔Nest_20
+                       NestwahlOK_abge≔ True 
+                   ElseIf Schublade6_auf
+                     If  not nest21
+                       KOS_iO_Nr_i≔Nest_21
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest22
+                       KOS_iO_Nr_i≔Nest_22
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest23
+                       KOS_iO_Nr_i≔Nest_23
+                       NestwahlOK_abge≔ True 
+                     ElseIf  not nest24
+                       KOS_iO_Nr_i≔Nest_24
+                       NestwahlOK_abge≔ True 
+           FahreLinear
+             appro_Nest16
+           FahreLinear
+             KOS_iO_Nr_i
+           Aufruf Gea_Rezepte_ablegen_JBE_1
+           NestwahlOK_abge≔ False 
+           LetztesTeil_iO≔ True 
+         If LetztesTeil_iO
+           Einstellen letztesTeil_OK=HI:Pulse 0.5
+           FahreLinear
+             über_Schublade4
+         Else
+           Einstellen letztesTeil_NOK=HI:Pulse 0.5
+           FahreAchse
+             appro_NestNOK
+           FahreP
+             presseGemNest_1
+             presseGemNest_2
+           Zugriff gemNester anfordern - auf Rob1 warten
+             If Zugriff_gemNest== False 
+               Einstellen Zugriff_gemNest=Ein
+               Warten warten_auf_Rob1=LO
+           'Meldung: Auf Rob1 warten'
+           FahreLinear
+             über_Schublade4
+     Schubladen schließen
+       If Schublade4_auf
+         If Schublade4_voll or Schublade4_schl
+           Aufruf GEA_Schublade_schließen_J
+       ElseIf Schublade5_auf
+         If Schublade5_voll or Schublade5_schl
+           Aufruf GEA_Schublade_schließen_J
+       ElseIf Schublade6_auf
+         If Schublade6_voll
+           Aufruf GEA_Schublade_schließen_J
+     If  not Schublade4_auf and  not Schublade5_auf and  not Schublade6_auf
+       Aufruf GEA_Schublade_öffnen_JBE
+   Thread_1
+     Ist ein Rezept ausgewählt?
+       If rezept1 or rezept2 or rezept3 or rezept4 or rezept5 or rezept6 or rezept7 or rezept8 or rezept9
+         Rezept_liegtAn≔ True 
+       Else
+         Rezept_liegtAn≔ False 
+     Welche Schublade ist offen (Roboterseite)?
+       If Schublade4Rob
+         Schublade4_auf≔ True 
+       Else
+         Schublade4_auf≔ False 
+       If Schublade5Rob
+         Schublade5_auf≔ True 
+       Else
+         Schublade5_auf≔ False 
+       If Schublade6Rob
+         Schublade6_auf≔ True 
+       Else
+         Schublade6_auf≔ False 
+     Welche Schublade ist komplett voll?
+       If nest13 and nest14 and nest15 and nest16
+         Schublade4_voll≔ True 
+       Else
+         Schublade4_voll≔ False 
+       If nest17 and nest18 and nest19 and nest20
+         Schublade5_voll≔ True 
+       Else
+         Schublade5_voll≔ False 
+       If nest21 and nest22 and nest23 and nest24
+         Schublade6_voll≔ True 
+       Else
+         Schublade6_voll≔ False 
+     In welcher Schublade ist das letzte Nest belegt?
+       If nest16
+         Schublade4_schl≔ True 
+       Else
+         Schublade4_schl≔ False 
+       If nest20 and nest19 and nest18
+         Schublade5_schl≔ True 
+       Else
+         Schublade5_schl≔ False 
+     Welche Schublade ist komplett leer und in Mittelstellung?
+       If ( not nest13 and  not nest14 and  not nest15 and  not nest16) and Schublade4berei
+         Schublade4_leer≔ True 
+       Else
+         Schublade4_leer≔ False 
+       If ( not nest17 and  not nest18 and  not nest19 and  not nest20) and Schublade5berei
+         Schublade5_leer≔ True 
+       Else
+         Schublade5_leer≔ False 
+       If ( not nest21 and  not nest22 and  not nest23 and  not nest24) and Schublade6berei
+         Schublade6_leer≔ True 
+       Else
+         Schublade6_leer≔ False 
+     Ist mind. ein gem. Nest belegt?
+       If gemein_nest25 or gemein_nest26 or gemein_nest27 or gemein_nest28
+         Nest25_28belegt≔ True 
+       Else
+         Nest25_28belegt≔ False 
+     Ist Nest 31 (NOK) belegt?
+       If NOK_nest31
+         Nest_31_belegt≔ True 
+       Else
+         Nest_31_belegt≔ False 
+     Merker Ende
+       If letztesTeil
+         merker_Ende≔ True 
+     sync()
+   GEA_Schublade_öffnen_JBE
+     If  not (Schublade4_auf or Schublade5_auf or Schublade6_auf) and  not (Schublade4_leer or Schublade5_leer or Schublade6_leer)
+       FahreLinear
+         warteGemNestBel
+       Einstellen Zugriff_gemNest=Aus
+     Warten Schublade4_leer or Schublade5_leer or Schublade6_leer
+     Zugriff gemNester anfordern - auf Rob1 warten
+       If Zugriff_gemNest== False 
+         Einstellen Zugriff_gemNest=Ein
+         Warten warten_auf_Rob1=LO
+     If Schublade4_leer
+       Schublade4 öffnen
+         FahreLinear
+           S4_hakenZu_1
+         FahreLinear
+           S4_hakenZu_2
+           S4_hakenZu_3
+           Schublade4zu
+           Schublade4offen
+           S4_hakenAuf_3
+           S4_hakenAuf_2
+           S4_hakenAuf_1
+         'debug only 2 lines'
+         Schublade4_auf≔ True 
+         'Halt'
+     ElseIf Schublade5_leer
+       Schublade5 öffnen
+         FahreP
+           S5_hakenZu_1
+           S5_hakenZu_2
+         FahreLinear
+           S5_hakenZu_3
+           S5_hakenZu_4
+           Schublade5zu
+           Schublade5offen
+           S5_hakenAuf_3
+           S5_hakenAuf_2
+           S5_hakenAuf_1
+         'debug only 2 lines'
+         Schublade5_auf≔ True 
+         'Halt'
+     ElseIf Schublade6_leer
+       Schublade6 öffnen
+         FahreP
+           S6_hakenZu_1
+           S6_hakenZu_2
+         FahreLinear
+           S6_hakenZu_3
+           S6_hakenZu_4
+           Schublade6zu
+           Schublade6offen
+           S6_hakenAuf_3
+           S6_hakenAuf_2
+           S6_hakenAuf_1
+           'debug only 2 lines'
+           Schublade6_auf≔ True 
+           'Halt'
+   GEA_Schublade_schließen_J
+     Zugriff gemNester anfordern - auf Rob1 warten
+       If Zugriff_gemNest== False 
+         Einstellen Zugriff_gemNest=Ein
+         Warten warten_auf_Rob1=LO
+     If Schublade4_auf
+       Schublade4 schließen
+         FahreLinear
+           S4_hakenAuf_4
+         FahreLinear
+           S4_hakenAuf_5
+           S4_hakenAuf_6
+         FahreLinear
+           Schublade4off_1
+           Schublade4zu_1
+         FahreLinear
+           S4_hakenZu_4
+           S4_hakenZu_5
+         FahreLinear
+           S4_hakenZu_6
+         'debug only 2 lines'
+         Schublade4_auf≔ False 
+         'Halt'
+     If Schublade5_auf
+       Schublade5 schließen
+         FahreLinear
+           S5_hakenAuf_4
+         FahreLinear
+           S5_hakenAuf_5
+           S5_hakenAuf_6
+         FahreLinear
+           Schublade5off_1
+           Schublade5zu_1
+         FahreLinear
+           S5_hakenZu_5
+           S5_hakenZu_6
+         FahreLinear
+           S5_hakenZu_7
+           S5_hakenZu_8
+         'debug only 2 lines'
+         Schublade5_auf≔ False 
+         'Halt'
+     If Schublade6_auf
+       Schublade6 schließen
+         FahreLinear
+           S6_hakenAuf_4
+         FahreLinear
+           S6_hakenAuf_5
+           S6_hakenAuf_6
+         FahreLinear
+           Schublade6off_1
+           Schublade6zu_1
+         FahreLinear
+           S6_hakenZu_5
+           S6_hakenZu_6
+         FahreLinear
+           S6_hakenZu_7
+           S6_hakenZu_8
+         'debug only 2 lines'
+         Schublade6_auf≔ False 
+         'Halt'
+   GEA_Nestauswahl_NOK_JBE
+     'ManuelleNestwahl'
+     Automatische Nestwahl
+       Warten  not Nest_31_belegt
+       If  not NOK_nest29 and ( not NOK_nest30 and  not NOK_nest31)
+         KOS_NOK_Nr_i≔NOK_Nest_29
+       ElseIf  not NOK_nest30 and  not NOK_nest31
+         KOS_NOK_Nr_i≔NOK_Nest_30
+       ElseIf  not NOK_nest31
+         KOS_NOK_Nr_i≔NOK_Nest_31
+   GEA_Nestauswahl_gemNest_J
+     If  not Nest25_28belegt
+       FahreLinear
+         warteGemNestB_1
+       Einstellen Zugriff_gemNest=Aus
+       'Meldung: Freigabe gem Bereich'
+     Schleife  not Nest25_28belegt and  not merker_Ende
+       sync()
+     If  not merker_Ende
+       Zugriff gemNester anfordern - auf Rob1 warten
+         If Zugriff_gemNest== False 
+           Einstellen Zugriff_gemNest=Ein
+           Warten warten_auf_Rob1=LO
+       'Meldung: Warte auf Rob1'
+       If gemein_nest25== True 
+         KOS_gemNestNr_i≔gem_Nest_25
+       ElseIf gemein_nest26== True 
+         KOS_gemNestNr_i≔gem_Nest_26
+       ElseIf gemein_nest27== True 
+         KOS_gemNestNr_i≔gem_Nest_27
+       ElseIf gemein_nest28== True 
+         KOS_gemNestNr_i≔gem_Nest_28
+       Else
+         KOS_gemNestNr_i≔gem_Nest_main28
+   Gea_Rezepte_messen_ande_1
+     Warten Rezept_liegtAn
+     merker_OK≔ False 
+     merker_NOK≔ False 
+     If rezept1 == True 
+       FahreLinear
+         start_MessenR1R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR1R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR1R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept2 == True 
+       FahreLinear
+         start_MessenR2R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR2R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR2R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept3 == True 
+       FahreLinear
+         start_MessenR3R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR3R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR3R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept4 == True 
+       FahreLinear
+         start_MessenR4R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR4R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR4R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept5 == True 
+       FahreLinear
+         start_MessenR5R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR5R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR5R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept6 == True 
+       FahreLinear
+         start_MessenR6R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR6R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR6R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept7 == True 
+       FahreLinear
+         start_MessenR7R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR7R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR7R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept8 == True 
+       FahreLinear
+         start_MessenR8R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR8R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR8R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept9 == True 
+       FahreLinear
+         start_MessenR9R
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR9R
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR9R
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+   Gea_Rezepte_messen_JBE
+     Warten Rezept_liegtAn
+     merker_OK≔ False 
+     merker_NOK≔ False 
+     If rezept1 == True 
+       FahreLinear
+         start_MessenR1L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR1L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR1L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept2 == True 
+       FahreLinear
+         start_MessenR2L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR2L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR2L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept3 == True 
+       FahreLinear
+         start_MessenR3L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR3L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR3L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept4 == True 
+       FahreLinear
+         start_MessenR4L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR4L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR4L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept5 == True 
+       FahreLinear
+         start_MessenR5L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR5L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR5L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept6 == True 
+       FahreLinear
+         start_MessenR6L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR6L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR6L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept7 == True 
+       FahreLinear
+         start_MessenR7L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR7L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR7L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept8 == True 
+       FahreLinear
+         start_MessenR8L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR8L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR8L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+     If rezept9 == True 
+       FahreLinear
+         start_MessenR9L
+         Einstellen reset_peak=HI:Pulse 1.0
+         Einstellen start_peak=HI:Pulse 0.5
+         Einstellen freigabe_mess=Ein
+         Warten: 1.0
+         FahreLinear
+           ende_MessenR9L
+         If NOK== True 
+           merker_NOK≔ True 
+           merker_OK≔ not merker_NOK
+           FahreLinear
+             start_MessenR9L
+               Until (expression)
+         Else
+           merker_OK≔ True 
+           merker_NOK≔ not merker_OK
+         Einstellen freigabe_mess=Aus
+   Gea_Rezepte_greifen_JBE
+     'muss 20 cm über dem nest sitzen'
+     Warten Rezept_liegtAn
+     posVorGreifen≔get_actual_tcp_pose()
+     FahreLinear
+       posVorGreifen
+     Einstellen gr5_auf_fahren=HI:Pulse 0.5
+     Warten gr5_ist_auf=HI
+     Variablen
+       var_1≔get_actual_tcp_pose()
+       var_2≔get_actual_tcp_pose()
+       var_3≔get_actual_tcp_pose()
+       var_4≔get_actual_tcp_pose()
+       var_5≔get_actual_tcp_pose()
+       var_6≔get_actual_tcp_pose()
+       var_7≔get_actual_tcp_pose()
+       var_8≔get_actual_tcp_pose()
+       var_9≔get_actual_tcp_pose()
+     Rezept 1&2
+       If rezept1== True 
+         var_1[2]=var_1[2]-NestDistRezept1
+         FahreLinear
+           var_1
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN25_beidseitig
+         Else
+           Nutzlast festlegen: DN25_einseitig
+     Rezept 3&4
+       If rezept2 ==  True 
+         var_2[2]=var_2[2]-NestDistRezept2
+         FahreLinear
+           var_2
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN40_beidseitig
+         Else
+           Nutzlast festlegen: DN40_einseitig
+     Rezept 5&6
+       If rezept3== True 
+         var_3[2]=var_3[2]-NestDistRezept3
+         FahreLinear
+           var_3
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN50_beidseitig
+         Else
+           Nutzlast festlegen: DN50_einseitig
+     Rezept 7&8
+       If rezept4 == True 
+         var_4[2]=var_4[2]-NestDistRezept4
+         FahreLinear
+           var_4
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN65_beidseitig
+         Else
+           Nutzlast festlegen: DN65_einseitig
+     Rezept 9&10
+       If rezept5 ==  True 
+         var_5[2]=var_5[2]-NestDistRezept5
+         FahreLinear
+           var_5
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD10_beidseitig
+         Else
+           Nutzlast festlegen: OD10_einseitig
+     Rezept 11&12
+       If rezept6 == True 
+         var_6[2]=var_6[2]-NestDistRezept6
+         FahreLinear
+           var_6
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD15_beidseitig
+         Else
+           Nutzlast festlegen: OD15_einseitig
+     Rezept 13&14
+       If rezept7 == True 
+         var_7[2]=var_7[2]-NestDistRezept7
+         FahreLinear
+           var_7
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD20_beidseitig
+         Else
+           Nutzlast festlegen: OD20_einseitig
+     Rezept 15&16
+       If rezept8== True 
+         var_8[2]=var_8[2]-NestDistRezept8
+         FahreLinear
+           var_8
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD25_beidseitig
+         Else
+           Nutzlast festlegen: OD25_einseitig
+     Rezept 17&18
+       If rezept9 == True 
+         var_9[2]=var_9[2]-NestDistRezept9
+         FahreLinear
+           var_9
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD30_beidseitig
+         Else
+           Nutzlast festlegen: OD30_einseitig
+     FahreLinear
+       Richtung: Werkzeug Z-
+         Until (distance)
+   Gea_Rezepte_ablegen_JBE_1
+     'muss 20 cm über dem nest sitzen'
+     Warten Rezept_liegtAn
+     var_11≔get_actual_tcp_pose()
+     FahreLinear
+       var_11
+     Variablen
+       var_12≔get_actual_tcp_pose()
+       var_13≔get_actual_tcp_pose()
+       var_14≔get_actual_tcp_pose()
+       var_15≔get_actual_tcp_pose()
+       var_16≔get_actual_tcp_pose()
+       var_17≔get_actual_tcp_pose()
+       var_18≔get_actual_tcp_pose()
+       var_19≔get_actual_tcp_pose()
+       var_20≔get_actual_tcp_pose()
+     Rezept 1&2
+       If rezept1 == True 
+         var_12[2]=var_12[2]-NestDistRezept1
+         FahreLinear
+           var_12
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 3&4
+       If rezept2 == True 
+         var_13[2]=var_13[2]-NestDistRezept2
+         FahreLinear
+           var_13
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 5&6
+       If rezept3 == True 
+         var_14[2]=var_14[2]-NestDistRezept3
+         FahreLinear
+           var_14
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 7&8
+       If rezept4 == True 
+         var_15[2]=var_15[2]-NestDistRezept4
+         FahreLinear
+           var_15
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 9&10
+       If rezept5 ==  True 
+         var_16[2]=var_16[2]-NestDistRezept5
+         FahreLinear
+           var_16
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 11&12
+       If rezept6 ==  True 
+         var_17[2]=var_17[2]-NestDistRezept6
+         FahreLinear
+           var_17
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 13&14
+       If rezept7 == True 
+         var_18[2]=var_18[2]-NestDistRezept7
+         FahreLinear
+           var_18
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 15&16
+       If rezept8 == True 
+         var_19[2]=var_19[2]-NestDistRezept8
+         FahreLinear
+           var_19
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 17&18
+       If rezept9 == True 
+         var_20[2]=var_20[2]-NestDistRezept9
+         FahreLinear
+           var_20
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Nutzlast festlegen: nur_Gr5
+     FahreLinear
+       Richtung: Werkzeug Z-
+         Until (distance)
+   GEA_gro_Rezepte_ablegen
+     'muss 13,5 cm über dem nest 17 oder 21 sitzen'
+     Warten Rezept_liegtAn
+     var_11≔get_actual_tcp_pose()
+     FahreLinear
+       var_11
+     Variablen
+       var_12≔get_actual_tcp_pose()
+       var_13≔get_actual_tcp_pose()
+       var_14≔get_actual_tcp_pose()
+       var_15≔get_actual_tcp_pose()
+       var_16≔get_actual_tcp_pose()
+       var_17≔get_actual_tcp_pose()
+       var_18≔get_actual_tcp_pose()
+       var_19≔get_actual_tcp_pose()
+       var_20≔get_actual_tcp_pose()
+     Rezept 1&2
+       If rezept1 == True 
+         var_12[2]=var_12[2]-NestNOK_Dist_R1
+         FahreLinear
+           var_12
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 3&4
+       If rezept2 == True 
+         var_13[2]=var_13[2]-NestNOK_Dist_R2
+         FahreLinear
+           var_13
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 5&6
+       If rezept3 == True 
+         var_14[2]=var_14[2]-NestNOK_Dist_R3
+         FahreLinear
+           var_14
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 7&8
+       If rezept4 == True 
+         var_15[2]=var_15[2]-NestNOK_Dist_R4
+         FahreLinear
+           var_15
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 9&10
+       If rezept5 ==  True 
+         var_16[2]=var_16[2]-NestNOK_Dist_R5
+         FahreLinear
+           var_16
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 11&12
+       If rezept6 ==  True 
+         var_17[2]=var_17[2]-NestNOK_Dist_R6
+         FahreLinear
+           var_17
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 13&14
+       If rezept7 == True 
+         var_18[2]=var_18[2]-NestNOK_Dist_R7
+         FahreLinear
+           var_18
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 15&16
+       If rezept8 == True 
+         var_19[2]=var_19[2]-NestNOK_Dist_R8
+         FahreLinear
+           var_19
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Rezept 17&18
+       If rezept9 == True 
+         var_20[2]=var_20[2]-NestNOK_Dist_R9
+         FahreLinear
+           var_20
+           Einstellen gr5_auf_fahren=HI:Pulse 0.5
+           Warten gr5_ist_auf=HI
+     Nutzlast festlegen: nur_Gr5
+     FahreLinear
+       Richtung: Werkzeug Z-
+         Until (distance)
+   GEA_Greifer_öffnen_JBE
+     Einstellen gr5_auf_fahren=HI:Pulse 0.5
+     Warten gr5_ist_auf=HI
+   GEA_Greifer_schließen_JBE
+     Einstellen gr5_zu_fahren=HI:Pulse 0.5
+     Warten gr5_ist_zu=HI

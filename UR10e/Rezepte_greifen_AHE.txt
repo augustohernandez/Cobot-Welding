@@ -1,0 +1,121 @@
+ Programm
+   Roboterprogramm
+     'muss 20 cm über dem nest sitzen'
+     Warten Rezept_liegtAn
+     posVorGreifen≔get_actual_tcp_pose()
+     FahreLinear
+       posVorGreifen
+     Einstellen gr5_auf_fahren=HI:Pulse 0.5
+     Warten gr5_ist_auf=HI
+     Variablen
+       var_1≔get_actual_tcp_pose()
+       var_2≔get_actual_tcp_pose()
+       var_3≔get_actual_tcp_pose()
+       var_4≔get_actual_tcp_pose()
+       var_5≔get_actual_tcp_pose()
+       var_6≔get_actual_tcp_pose()
+       var_7≔get_actual_tcp_pose()
+       var_8≔get_actual_tcp_pose()
+       var_9≔get_actual_tcp_pose()
+     Rezept 1&2
+       If rezept1== True 
+         var_1[2]=var_1[2]-NestDistRezept1
+         FahreLinear
+           var_1
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN25_beidseitig
+         Else
+           Nutzlast festlegen: DN25_einseitig
+     Rezept 3&4
+       If rezept2 ==  True 
+         var_2[2]=var_2[2]-NestDistRezept2
+         FahreLinear
+           var_2
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN40_beidseitig
+         Else
+           Nutzlast festlegen: DN40_einseitig
+     Rezept 5&6
+       If rezept3== True 
+         var_3[2]=var_3[2]-NestDistRezept3
+         FahreLinear
+           var_3
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN50_beidseitig
+         Else
+           Nutzlast festlegen: DN50_einseitig
+     Rezept 7&8
+       If rezept4 == True 
+         var_4[2]=var_4[2]-NestDistRezept4
+         FahreLinear
+           var_4
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: DN65_beidseitig
+         Else
+           Nutzlast festlegen: DN65_einseitig
+     Rezept 9&10
+       If rezept5 ==  True 
+         var_5[2]=var_5[2]-NestDistRezept5
+         FahreLinear
+           var_5
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD10_beidseitig
+         Else
+           Nutzlast festlegen: OD10_einseitig
+     Rezept 11&12
+       If rezept6 == True 
+         var_6[2]=var_6[2]-NestDistRezept6
+         FahreLinear
+           var_6
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD15_beidseitig
+         Else
+           Nutzlast festlegen: OD15_einseitig
+     Rezept 13&14
+       If rezept7 == True 
+         var_7[2]=var_7[2]-NestDistRezept7
+         FahreLinear
+           var_7
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD20_beidseitig
+         Else
+           Nutzlast festlegen: OD20_einseitig
+     Rezept 15&16
+       If rezept8== True 
+         var_8[2]=var_8[2]-NestDistRezept8
+         FahreLinear
+           var_8
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD25_beidseitig
+         Else
+           Nutzlast festlegen: OD25_einseitig
+     Rezept 17&18
+       If rezept9 == True 
+         var_9[2]=var_9[2]-NestDistRezept9
+         FahreLinear
+           var_9
+         Einstellen gr5_zu_fahren=HI:Pulse 0.5
+         Warten gr5_ist_zu=HI
+         If Beidseitig== True 
+           Nutzlast festlegen: OD30_beidseitig
+         Else
+           Nutzlast festlegen: OD30_einseitig
+     FahreLinear
+       Richtung: Werkzeug Z-
+         Until (distance)

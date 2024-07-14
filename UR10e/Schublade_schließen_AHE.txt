@@ -1,0 +1,62 @@
+ Programm
+   Roboterprogramm
+     Zugriff gemNester anfordern - auf Rob1 warten
+       If Zugriff_gemNest== False 
+         Einstellen Zugriff_gemNest=Ein
+         Warten warten_auf_Rob1=LO
+     If Schublade4_auf
+       Schublade4 schließen
+         FahreLinear
+           S4_hakenAuf_4
+         FahreLinear
+           S4_hakenAuf_5
+           S4_hakenAuf_6
+         FahreLinear
+           Schublade4off_1
+           Schublade4zu_1
+         FahreLinear
+           S4_hakenZu_4
+           S4_hakenZu_5
+         FahreLinear
+           S4_hakenZu_6
+         'debug only 2 lines'
+         Schublade4_auf≔ False 
+         'Halt'
+     If Schublade5_auf
+       Schublade5 schließen
+         FahreLinear
+           S5_hakenAuf_4
+         FahreLinear
+           S5_hakenAuf_5
+           S5_hakenAuf_6
+         FahreLinear
+           Schublade5off_1
+           Schublade5zu_1
+         FahreLinear
+           S5_hakenZu_5
+           S5_hakenZu_6
+         FahreLinear
+           S5_hakenZu_7
+           S5_hakenZu_8
+         'debug only 2 lines'
+         Schublade5_auf≔ False 
+         'Halt'
+     If Schublade6_auf
+       Schublade6 schließen
+         FahreLinear
+           S6_hakenAuf_4
+         FahreLinear
+           S6_hakenAuf_5
+           S6_hakenAuf_6
+         FahreLinear
+           Schublade6off_1
+           Schublade6zu_1
+         FahreLinear
+           S6_hakenZu_5
+           S6_hakenZu_6
+         FahreLinear
+           S6_hakenZu_7
+           S6_hakenZu_8
+         'debug only 2 lines'
+         Schublade6_auf≔ False 
+         'Halt'

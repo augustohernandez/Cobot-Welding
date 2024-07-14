@@ -1,0 +1,11 @@
+ Programm
+   Roboterprogramm
+     'ManuelleNestwahl'
+     Automatische Nestwahl
+       Warten  not Nest_31_belegt
+       If  not NOK_nest29 and ( not NOK_nest30 and  not NOK_nest31)
+         KOS_NOK_Nr_i≔NOK_Nest_29
+       ElseIf  not NOK_nest30 and  not NOK_nest31
+         KOS_NOK_Nr_i≔NOK_Nest_30
+       ElseIf  not NOK_nest31
+         KOS_NOK_Nr_i≔NOK_Nest_31

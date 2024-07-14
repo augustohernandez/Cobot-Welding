@@ -1,0 +1,25 @@
+ Programm
+   Roboterprogramm
+     If  not Nest25_28belegt
+       FahreLinear
+         warteGemNestB_1
+       Einstellen Zugriff_gemNest=Aus
+       'Meldung: Freigabe gem Bereich'
+     Schleife  not Nest25_28belegt and  not merker_Ende
+       sync()
+     If  not merker_Ende
+       Zugriff gemNester anfordern - auf Rob1 warten
+         If Zugriff_gemNest== False 
+           Einstellen Zugriff_gemNest=Ein
+           Warten warten_auf_Rob1=LO
+       'Meldung: Warte auf Rob1'
+       If gemein_nest25== True 
+         KOS_gemNestNr_i≔gem_Nest_25
+       ElseIf gemein_nest26== True 
+         KOS_gemNestNr_i≔gem_Nest_26
+       ElseIf gemein_nest27== True 
+         KOS_gemNestNr_i≔gem_Nest_27
+       ElseIf gemein_nest28== True 
+         KOS_gemNestNr_i≔gem_Nest_28
+       Else
+         KOS_gemNestNr_i≔gem_Nest_main28

@@ -1,0 +1,6 @@
+ Programm
+   Roboterprogramm
+     Einstellen gr5_auf_fahren=HI:Pulse 0.5
+     Warten gr5_ist_auf=HI
+     Einstellen gr5_zu_fahren=HI:Pulse 0.5
+     Warten gr5_ist_zu=HI

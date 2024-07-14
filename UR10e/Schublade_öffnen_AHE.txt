@@ -1,0 +1,58 @@
+ Programm
+   Roboterprogramm
+     If  not (Schublade4_auf or Schublade5_auf or Schublade6_auf) and  not (Schublade4_leer or Schublade5_leer or Schublade6_leer)
+       FahreLinear
+         warteGemNestBel
+       Einstellen Zugriff_gemNest=Aus
+     Warten Schublade4_leer or Schublade5_leer or Schublade6_leer
+     Zugriff gemNester anfordern - auf Rob1 warten
+       If Zugriff_gemNest== False 
+         Einstellen Zugriff_gemNest=Ein
+         Warten warten_auf_Rob1=LO
+     If Schublade4_leer
+       Schublade4 öffnen
+         FahreLinear
+           S4_hakenZu_1
+         FahreLinear
+           S4_hakenZu_2
+           S4_hakenZu_3
+           Schublade4zu
+           Schublade4offen
+           S4_hakenAuf_3
+           S4_hakenAuf_2
+           S4_hakenAuf_1
+         'debug only 2 lines'
+         Schublade4_auf≔ True 
+         'Halt'
+     ElseIf Schublade5_leer
+       Schublade5 öffnen
+         FahreP
+           S5_hakenZu_1
+           S5_hakenZu_2
+         FahreLinear
+           S5_hakenZu_3
+           S5_hakenZu_4
+           Schublade5zu
+           Schublade5offen
+           S5_hakenAuf_3
+           S5_hakenAuf_2
+           S5_hakenAuf_1
+         'debug only 2 lines'
+         Schublade5_auf≔ True 
+         'Halt'
+     ElseIf Schublade6_leer
+       Schublade6 öffnen
+         FahreP
+           S6_hakenZu_1
+           S6_hakenZu_2
+         FahreLinear
+           S6_hakenZu_3
+           S6_hakenZu_4
+           Schublade6zu
+           Schublade6offen
+           S6_hakenAuf_3
+           S6_hakenAuf_2
+           S6_hakenAuf_1
+           'debug only 2 lines'
+           Schublade6_auf≔ True 
+           'Halt'
